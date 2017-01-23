@@ -17,8 +17,8 @@
 package org.semarglproject.jsonld;
 
 import org.apache.commons.io.IOUtils;
-import org.openrdf.model.Model;
-import org.openrdf.model.util.ModelUtil;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.util.Models;
 import org.semarglproject.rdf.NQuadsSerializer;
 import org.semarglproject.rdf.ParseException;
 import org.semarglproject.sink.CharOutputSink;
@@ -117,7 +117,7 @@ public class JsonLdParserTest {
         }
         Model result = sth.createModelFromFile(resultFilePath, testCase.input);
         Model expected = sth.createModelFromFile(testCase.result, testCase.input);
-        boolean equals = ModelUtil.equals(result, expected);
+        boolean equals = Models.isomorphic(result, expected);
         if (!equals) {
             assertEquals(sth.diff(result, expected), sth.diff(expected, result), testCase.descr);
         }

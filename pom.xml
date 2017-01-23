@@ -4,7 +4,7 @@
 
     <groupId>org.semarglproject</groupId>
     <artifactId>semargl-parent</artifactId>
-    <version>0.7.1-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semargl: Parent Aggregator</name>
@@ -52,8 +52,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Compiler -->
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
 
         <!-- Plugins -->
         <version.clean.plugin>3.0.0</version.clean.plugin>
@@ -243,7 +243,26 @@
                         </execution>
                     </executions>
                 </plugin>
-
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>animal-sniffer-maven-plugin</artifactId>
+                    <version>1.15</version>
+                    <executions>
+                        <execution>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <signature>
+                            <groupId>org.codehaus.mojo.signature</groupId>
+                            <artifactId>java18</artifactId>
+                            <version>1.0</version>
+                        </signature>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -256,7 +275,7 @@
                             <configuration>
                                 <rules>
                                     <requireMavenVersion>
-                                        <version>2.0.6</version>
+                                        <version>3.0.5</version>
                                     </requireMavenVersion>
                                     <DependencyConvergence />
                                     <requirePluginVersions>
@@ -265,10 +284,20 @@
                                         <banSnapshots>true</banSnapshots>
                                         <phases>clean,deploy</phases>
                                     </requirePluginVersions>
+                                    <enforceBytecodeVersion>
+                                        <maxJdkVersion>1.8</maxJdkVersion>
+                                    </enforceBytecodeVersion>
                                 </rules>
                             </configuration>
                         </execution>
                     </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>extra-enforcer-rules</artifactId>
+                            <version>1.0-beta-6</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>

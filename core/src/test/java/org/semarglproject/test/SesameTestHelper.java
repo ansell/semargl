@@ -16,35 +16,34 @@
 
 package org.semarglproject.test;
 
-import info.aduna.io.IOUtil;
-import info.aduna.iteration.Iterations;
 import org.apache.commons.io.FileUtils;
-import org.openrdf.OpenRDFException;
-import org.openrdf.model.Model;
-import org.openrdf.model.Statement;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.QueryResults;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.resultio.helpers.QueryResultCollector;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.ParserConfig;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
-import org.openrdf.rio.helpers.BasicParserSettings;
-import org.openrdf.rio.helpers.ContextStatementCollector;
-import org.openrdf.rio.helpers.NTriplesParserSettings;
-import org.openrdf.rio.helpers.ParseErrorCollector;
-import org.openrdf.sail.memory.MemoryStore;
+import org.eclipse.rdf4j.RDF4JException;
+import org.eclipse.rdf4j.common.io.IOUtil;
+import org.eclipse.rdf4j.common.iteration.Iterations;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.resultio.helpers.QueryResultCollector;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.ParserConfig;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.BasicParserSettings;
+import org.eclipse.rdf4j.rio.helpers.ContextStatementCollector;
+import org.eclipse.rdf4j.rio.helpers.ParseErrorCollector;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,11 +74,7 @@ public class SesameTestHelper {
     }
 
     public static RDFFormat detectFileFormat(String filename) {
-        RDFFormat result = Rio.getParserFormatForFileName(filename);
-        if (result == null) {
-            throw new IllegalArgumentException("Unknown file format");
-        }
-        return result;
+        return Rio.getParserFormatForFileName(filename).orElseThrow(Rio.unsupportedFormat(filename));
     }
 
     public InputStream openStreamForResource(String uri)
@@ -121,7 +116,7 @@ public class SesameTestHelper {
         if (filename != null) {
             try {
                 RDFParser parser = Rio.createParser(SesameTestHelper.detectFileFormat(filename));
-                parser.setRDFHandler(new ContextStatementCollector(model, ValueFactoryImpl.getInstance()));
+                parser.setRDFHandler(new ContextStatementCollector(model, SimpleValueFactory.getInstance()));
 
                 ParserConfig config = parser.getParserConfig();
                 config.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
@@ -146,7 +141,7 @@ public class SesameTestHelper {
                 for(String nextWarning : errors.getWarnings()) {
                     System.err.println("Parse warning was ignored : " + filename + " : "+ nextWarning);
                 }
-            } catch (OpenRDFException e) {
+            } catch (RDF4JException e) {
                 System.err.println("Fatal parse error caused failure : " + filename + " : "+ e.getMessage());
                 //e.printStackTrace();
                 // Avoid returning a partial model if there was a fatal error
@@ -189,7 +184,7 @@ public class SesameTestHelper {
         try {
             Model inputModel = createModelFromFile(producedModelPath, baseUri);
             Model expected = createModelFromFile(expectedModelPath, baseUri);
-            return ModelUtil.equals(inputModel, expected);
+            return Models.isomorphic(inputModel, expected);
         } catch (IOException e) {
             return false;
         }
